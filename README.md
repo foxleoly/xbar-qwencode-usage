@@ -28,7 +28,7 @@ After installation, launch xbar and follow the setup instructions.
 Run this one-liner in your terminal:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/foxleoly/xbar-qwencode-usage/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/foxleoly/xbar-qwencode-usage/master/install.sh | bash
 ```
 
 ### Manual Installation
@@ -38,7 +38,7 @@ curl -sSL https://raw.githubusercontent.com/foxleoly/xbar-qwencode-usage/main/in
 2. Download the plugin:
    ```bash
    curl -o ~/Library/Application\ Support/xbar/plugins/opencode-usage.1m.py \
-     https://raw.githubusercontent.com/foxleoly/xbar-qwencode-usage/main/opencode-usage.1m.py
+     https://raw.githubusercontent.com/foxleoly/xbar-qwencode-usage/master/opencode-usage.1m.py
    chmod +x ~/Library/Application\ Support/xbar/plugins/opencode-usage.1m.py
    ```
 

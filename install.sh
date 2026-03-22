@@ -33,7 +33,7 @@ fi
 
 # Download plugin
 echo "Downloading plugin..."
-curl -sSL "$REPO_URL/$USERNAME/$REPO_NAME/main/opencode-usage.1m.py" -o "$PLUGIN_DIR/$PLUGIN_FILE"
+curl -sSL "$REPO_URL/$USERNAME/$REPO_NAME/master/opencode-usage.1m.py" -o "$PLUGIN_DIR/$PLUGIN_FILE"
 
 # Make executable
 chmod +x "$PLUGIN_DIR/$PLUGIN_FILE"
