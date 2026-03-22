@@ -10,6 +10,7 @@ A [xbar](https://github.com/matryer/xbar) plugin that displays daily token usage
 - Current model name from settings
 - Auto-refresh every minute
 - Color-coded output for easy reading
+- **Built-in auto-update** - Check and install updates from menu
 
 ## Prerequisites
 
@@ -122,6 +123,22 @@ Updated: 20:06:28
 ```
 
 ## Customization
+
+### Auto-Update
+
+The plugin includes a built-in auto-update feature:
+
+- When a new version is available, an update notification appears in the menu
+- Click "🔄 Update to vX.X.X" to install the latest version automatically
+- The plugin will refresh after updating
+
+### Manual Update
+
+You can also update manually:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/foxleoly/xbar-qwencode-usage/master/install.sh | bash
+```
 
 ### Refresh Interval
 

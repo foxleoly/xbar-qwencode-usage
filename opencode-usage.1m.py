@@ -6,14 +6,49 @@
 # <xbar.dependencies>python3</xbar.dependencies>
 
 import json
+import os
 import sqlite3
+import subprocess
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
+
+VERSION = "2.9.0"
+REPO = "foxleoly/xbar-qwencode-usage"
+PLUGIN_PATH = os.path.abspath(__file__)
 
 def format_count(n):
     if n >= 1_000_000: return f"{n/1_000_000:.1f}M"
     if n >= 1_000: return f"{n/1_000:.1f}K"
     return str(n)
+
+def get_latest_version():
+    """Get latest version from GitHub"""
+    try:
+        import urllib.request
+        url = f"https://raw.githubusercontent.com/{REPO}/master/opencode-usage.1m.py"
+        with urllib.request.urlopen(url, timeout=5) as response:
+            content = response.read().decode('utf-8')
+            for line in content.split('\n'):
+                if line.startswith('# <xbar.version>'):
+                    return line.split('>')[1].split('<')[0]
+    except:
+        pass
+    return None
+
+def update_plugin():
+    """Download and install latest version"""
+    try:
+        import urllib.request
+        url = f"https://raw.githubusercontent.com/{REPO}/master/opencode-usage.1m.py"
+        with urllib.request.urlopen(url, timeout=10) as response:
+            content = response.read().decode('utf-8')
+        with open(PLUGIN_PATH, 'w') as f:
+            f.write(content)
+        os.chmod(PLUGIN_PATH, 0o755)
+        return True
+    except Exception as e:
+        return False
 
 def get_model_info():
     """Get current model name from settings.json"""
@@ -120,6 +155,10 @@ def main():
     qw_t = qw.get('today',{}).get('t',0)
     model_name = get_model_info()
     
+    # Check for updates
+    latest_version = get_latest_version()
+    has_update = latest_version and latest_version != VERSION
+    
     # Title - Qwen Code first
     if qw_t > 0 and oc_t > 0:
         print(f"QC {format_count(qw_t)} / OC {format_count(oc_t)}")
@@ -129,7 +168,16 @@ def main():
         print(f"OC {format_count(oc_t)}")
     else:
         print("No data")
+    
+    # Update notification
+    if has_update:
+        print(f"⬆️ v{VERSION} → v{latest_version} | color=orange")
     print("---")
+    
+    # Update menu item
+    if has_update:
+        print(f"🔄 Update to v{latest_version} | bash={sys.executable} param1={PLUGIN_PATH} param2=update terminal=false refresh=true")
+        print("---")
     
     # Qwen Code section (first)
     if qw_t > 0:
@@ -158,7 +206,14 @@ def main():
         print(f"--Model: {model_name or 'N/A'} | color=#b0bec5 size=11")
     
     print("---")
+    print(f"Current: v{VERSION} | color=#78909c size=10")
     print(f"Updated: {datetime.now().strftime('%H:%M:%S')} | color=#78909c size=10")
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "update":
+        if update_plugin():
+            print("✅ Update successful!")
+        else:
+            print("❌ Update failed!")
+        sys.exit(0)
     main()
