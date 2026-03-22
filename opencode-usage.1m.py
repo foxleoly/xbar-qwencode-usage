@@ -13,7 +13,7 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-VERSION = "2.9.0"
+VERSION = "2.10.0"
 REPO = "foxleoly/xbar-qwencode-usage"
 PLUGIN_PATH = os.path.abspath(__file__)
 
