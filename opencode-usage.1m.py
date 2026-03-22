@@ -1,7 +1,6 @@
 #!/opt/homebrew/bin/python3
 # <xbar.title>Qwen Code & OpenCode Token Usage</xbar.title>
-# <xbar.version>2.8.0</xbar.version>
-# <xbar.author>Qwen Code</xbar.author>
+# <xbar.version>2.10.0</xbar.version>
 # <xbar.desc>Shows daily token usage from Qwen Code and OpenCode</xbar.desc>
 # <xbar.dependencies>python3</xbar.dependencies>
 
