@@ -1,6 +1,6 @@
 #!/opt/homebrew/bin/python3
 # <xbar.title>Qwen Code, OpenCode & Claude Code Token Usage</xbar.title>
-# <xbar.version>2.11.0</xbar.version>
+# <xbar.version>2.11.1</xbar.version>
 # <xbar.desc>Shows daily token usage from Qwen Code, OpenCode and Claude Code</xbar.desc>
 # <xbar.dependencies>python3</xbar.dependencies>
 
@@ -12,7 +12,7 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-VERSION = "2.11.0"
+VERSION = "2.11.1"
 REPO = "foxleoly/xbar-qwencode-usage"
 PLUGIN_PATH = os.path.abspath(__file__)
 
