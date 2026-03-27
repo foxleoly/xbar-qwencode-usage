@@ -1,10 +1,10 @@
-# xbar Qwen Code & OpenCode Token Usage
+# xbar Qwen Code, OpenCode & Claude Code Token Usage
 
-A [xbar](https://github.com/matryer/xbar) plugin that displays daily token usage statistics for [Qwen Code](https://github.com/QwenLM/qwen-code) and [OpenCode](https://github.com/opencode-ai/opencode) in your macOS menu bar.
+A [xbar](https://github.com/matryer/xbar) plugin that displays daily token usage statistics for [Qwen Code](https://github.com/QwenLM/qwen-code), [OpenCode](https://github.com/opencode-ai/opencode) and [Claude Code](https://claude.ai/code) in your macOS menu bar.
 
 ## Features
 
-- Display token usage for both Qwen Code and OpenCode
+- Display token usage for Qwen Code, OpenCode and Claude Code
 - Real-time statistics: Total, Input, Output, Cache, Thoughts/Reasoning
 - 7-day and 30-day rolling totals
 - Current model name from settings
@@ -69,9 +69,10 @@ This plugin reads token usage data from the following locations:
 | Tool | Data Path | Description |
 |------|-----------|-------------|
 | Qwen Code | `~/.qwen/projects/*/chats/*.jsonl` | JSONL log files |
+| Claude Code | `~/.claude/projects/*/*.jsonl` | JSONL log files |
 | OpenCode | `~/.local/share/opencode/opencode.db` | SQLite database |
 
-> 📝 **Note**: Qwen Code and OpenCode are NOT required dependencies. The plugin will simply show "No data" or hide the section if the corresponding data source doesn't exist.
+> 📝 **Note**: Qwen Code, Claude Code and OpenCode are NOT required dependencies. The plugin will simply show "No data" or hide the section if the corresponding data source doesn't exist.
 
 ## Configuration
 
@@ -97,17 +98,25 @@ Example `settings.json`:
 ## Output Example
 
 ```
-OC 1.2M / QC 24.3M
+QC 7.9M / CC 1.3M / OC 1.2M
 ---
 Qwen Code
---Total: 24.3M
---Input: 24.2M
---Output: 155.9K
---Cache: 21.6M
---Thoughts: 27.9K
---7-Day: 24.3M
---30-Day: 24.3M
+--Total: 7.9M
+--Input: 7.8M
+--Output: 73.1K
+--Cache: 6.7M
+--Thoughts: 28.8K
+--7-Day: 49.5M
+--30-Day: 49.5M
 --Model: [Bailian Coding Plan] glm-5
+---
+Claude Code
+--Total: 1.3M
+--Input: 1.3M
+--Output: 4.1K
+--Cache: 503.9K
+--7-Day: 1.3M
+--30-Day: 1.3M
 ---
 OpenCode
 --Total: 1.2M

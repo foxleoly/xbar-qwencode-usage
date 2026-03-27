@@ -1,7 +1,7 @@
 #!/opt/homebrew/bin/python3
-# <xbar.title>Qwen Code & OpenCode Token Usage</xbar.title>
-# <xbar.version>2.10.0</xbar.version>
-# <xbar.desc>Shows daily token usage from Qwen Code and OpenCode</xbar.desc>
+# <xbar.title>Qwen Code, OpenCode & Claude Code Token Usage</xbar.title>
+# <xbar.version>2.11.0</xbar.version>
+# <xbar.desc>Shows daily token usage from Qwen Code, OpenCode and Claude Code</xbar.desc>
 # <xbar.dependencies>python3</xbar.dependencies>
 
 import json
@@ -12,7 +12,7 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-VERSION = "2.10.0"
+VERSION = "2.11.0"
 REPO = "foxleoly/xbar-qwencode-usage"
 PLUGIN_PATH = os.path.abspath(__file__)
 
@@ -112,6 +112,8 @@ def get_qwen_stats():
     now = datetime.now().date()
     cutoff7 = now - timedelta(days=6)
     cutoff30 = now - timedelta(days=29)
+    latest_model = None
+    latest_ts = None
     for f in qwen_path.glob("*/chats/*.jsonl"):
         try:
             for line in open(f):
@@ -127,6 +129,12 @@ def get_qwen_stats():
                 o = ui.get("output_token_count",0)
                 c = ui.get("cached_content_token_count",0)
                 th = ui.get("thoughts_token_count",0)
+                # Track latest model
+                model = ui.get("model")
+                if model and ts:
+                    if latest_ts is None or ts > latest_ts:
+                        latest_ts = ts
+                        latest_model = model
                 if rd == now:
                     stats['today']['t'] += t
                     stats['today']['i'] += i
@@ -146,38 +154,86 @@ def get_qwen_stats():
                     stats['d30']['c'] += c
                     stats['d30']['th'] += th
         except: pass
+    stats['model'] = latest_model
+    return stats
+
+def get_claude_stats():
+    """Get Claude Code token usage from ~/.claude/projects/*/*.jsonl"""
+    claude_path = Path.home() / ".claude/projects"
+    if not claude_path.exists(): return {}
+    stats = {'today': {'t':0,'i':0,'o':0,'c':0}, 'd7': {'t':0,'i':0,'o':0,'c':0}, 'd30': {'t':0,'i':0,'o':0,'c':0}}
+    now = datetime.now().date()
+    cutoff7 = now - timedelta(days=6)
+    cutoff30 = now - timedelta(days=29)
+    for f in claude_path.glob("*/*.jsonl"):
+        try:
+            for line in open(f):
+                try:
+                    d = json.loads(line)
+                    if d.get("type") != "assistant": continue
+                    ts = d.get("timestamp", "")
+                    if not ts: continue
+                    rd = datetime.fromisoformat(ts.replace("Z", "+00:00")).date()
+                    usage = d.get("message", {}).get("usage", {})
+                    i = usage.get("input_tokens", 0)
+                    o = usage.get("output_tokens", 0)
+                    c = usage.get("cache_read_input_tokens", 0)
+                    t = i + o
+                    if rd == now:
+                        stats['today']['t'] += t
+                        stats['today']['i'] += i
+                        stats['today']['o'] += o
+                        stats['today']['c'] += c
+                    if rd >= cutoff7:
+                        stats['d7']['t'] += t
+                        stats['d7']['i'] += i
+                        stats['d7']['o'] += o
+                        stats['d7']['c'] += c
+                    if rd >= cutoff30:
+                        stats['d30']['t'] += t
+                        stats['d30']['i'] += i
+                        stats['d30']['o'] += o
+                        stats['d30']['c'] += c
+                except: pass
+        except: pass
     return stats
 
 def main():
     oc_t, oc_i, oc_o, oc_c, oc_r, oc_7, oc_30, oc_7_r, oc_30_r = get_oc_stats()
     qw = get_qwen_stats()
+    cc = get_claude_stats()
     qw_t = qw.get('today',{}).get('t',0)
-    model_name = get_model_info()
-    
+    cc_t = cc.get('today',{}).get('t',0)
+    # Get model from chat logs first, fallback to settings.json
+    qw_model = qw.get('model') or get_model_info()
+
     # Check for updates
     latest_version = get_latest_version()
     has_update = latest_version and latest_version != VERSION
-    
-    # Title - Qwen Code first
-    if qw_t > 0 and oc_t > 0:
-        print(f"QC {format_count(qw_t)} / OC {format_count(oc_t)}")
-    elif qw_t > 0:
-        print(f"QC {format_count(qw_t)}")
-    elif oc_t > 0:
-        print(f"OC {format_count(oc_t)}")
+
+    # Title - show all tools with data
+    title_parts = []
+    if qw_t > 0:
+        title_parts.append(f"QC {format_count(qw_t)}")
+    if cc_t > 0:
+        title_parts.append(f"CC {format_count(cc_t)}")
+    if oc_t > 0:
+        title_parts.append(f"OC {format_count(oc_t)}")
+    if title_parts:
+        print(" / ".join(title_parts))
     else:
         print("No data")
-    
+
     # Update notification
     if has_update:
         print(f"⬆️ v{VERSION} → v{latest_version} | color=orange")
     print("---")
-    
+
     # Update menu item
     if has_update:
-        print(f"🔄 Update to v{latest_version} | bash={sys.executable} param1={PLUGIN_PATH} param2=update terminal=false refresh=true")
+        print(f"🔄 Update to v{latest_version} | href=https://github.com/{REPO}")
         print("---")
-    
+
     # Qwen Code section (first)
     if qw_t > 0:
         print("Qwen Code | color=#7986cb font=Menlo size=13")
@@ -188,11 +244,23 @@ def main():
         print(f"--Thoughts: {format_count(qw['today']['th'])} | color=#f48fb1")
         print(f"--7-Day: {format_count(qw['d7']['t'])} | color=#ce93d8")
         print(f"--30-Day: {format_count(qw['d30']['t'])} | color=#90a4ae")
-        print(f"--Model: {model_name or 'N/A'} | color=#b0bec5 size=11")
-    
-    # OpenCode section (second)
-    if oc_t > 0:
+        print(f"--Model: {qw_model or 'N/A'} | color=#b0bec5 size=11")
+
+    # Claude Code section (second)
+    if cc_t > 0:
         if qw_t > 0:
+            print("---")
+        print("Claude Code | color=#d4a574 font=Menlo size=13")
+        print(f"--Total: {format_count(cc['today']['t'])} | color=#00bcd4")
+        print(f"--Input: {format_count(cc['today']['i'])} | color=#81d4fa")
+        print(f"--Output: {format_count(cc['today']['o'])} | color=#a5d6a7")
+        print(f"--Cache: {format_count(cc['today']['c'])} | color=#ffcc80")
+        print(f"--7-Day: {format_count(cc['d7']['t'])} | color=#ce93d8")
+        print(f"--30-Day: {format_count(cc['d30']['t'])} | color=#90a4ae")
+
+    # OpenCode section (third)
+    if oc_t > 0:
+        if qw_t > 0 or cc_t > 0:
             print("---")
         print("OpenCode | color=#4fc3f7 font=Menlo size=13")
         print(f"--Total: {format_count(oc_t)} | color=#00bcd4")
@@ -202,8 +270,8 @@ def main():
         print(f"--Reasoning: {format_count(oc_r)} | color=#f48fb1")
         print(f"--7-Day: {format_count(oc_7)} | color=#ce93d8")
         print(f"--30-Day: {format_count(oc_30)} | color=#90a4ae")
-        print(f"--Model: {model_name or 'N/A'} | color=#b0bec5 size=11")
-    
+        print(f"--Model: {qw_model or 'N/A'} | color=#b0bec5 size=11")
+
     print("---")
     print(f"Current: v{VERSION} | color=#78909c size=10")
     print(f"Updated: {datetime.now().strftime('%H:%M:%S')} | color=#78909c size=10")
